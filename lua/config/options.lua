@@ -16,3 +16,6 @@ vim.opt.clipboard = ""
 --
 -- But it get's annoying. So we've put it back to how it's supposed to be.
 vim.opt.clipboard = ""
+
+-- Work don't use any linters, and having the enabled by default just causes problems.
+vim.g.autoformat = vim.env.NVIM_PROFILE ~= "work"
