@@ -44,6 +44,31 @@ return {
         end
         return config
       end
+
+      -- We disable autobuild. jdtls doesn't seem to play nice with our projects.
+      -- https://medium.com/@laxsuryavanshi.dev/the-mystery-of-the-disappearing-compilation-when-vs-codes-java-extension-sabotages-your-maven-be82755d8dc6
+      -- Basically jdtls uses the eclipse compiler, which doesn't seem to play nice with spring boot and it's annotations.
+      -- Which is fine, sort of, because eclipse is made not to throw errors when it builds. So we wouldn't get any of the
+      -- spring generated implementations. But we would get everything else.
+      -- Unfortunately jdtls, or the editor, I'm not sure which, also watches the target directory, and so when we actually intend to build
+      -- the project and do it using maven and javac, jdtls sees the project as having changed. And so attempts to rebuild the project itself.
+      -- And depending on which finishes first and last decides whether or not the project actually runs.
+      -- In the medium article the suggested fix is to stop vs code from watching the target / build directory.
+      --
+      -- `settings.json`
+      -- ```json
+      -- { "files.watcherExclude": { "**/target/**": true} }
+      -- ```
+      --
+      -- Unfortunately I don't know how to get it to do that.
+      --
+      -- We could also have jdtls build to a directory other than target so the two don't conflict. Which would be all round preferable.
+      -- But I'm not sure how to do that in the first place. And I suspect it might have to do with changing the project POM which is a no go.
+      opts.settings = opts.settings or {}
+      opts.settings.java = opts.settings.java or {}
+      opts.settings.java.autobuild = opts.settings.java.autobuild or {}
+      opts.settings.java.autobuild.enabled = false
+
       return opts
     end,
   },
