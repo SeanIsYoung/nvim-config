@@ -19,3 +19,15 @@ vim.opt.clipboard = ""
 
 -- Work don't use any linters, and having the enabled by default just causes problems.
 vim.g.autoformat = vim.env.NVIM_PROFILE ~= "work"
+
+
+-- LazyVim sets the defaults to 2. I personally prefer 2, but work and most everyone else seems to use 4.
+--
+-- The problem is that work and most everyone else don't provide configurations to enforce this.
+-- So... If you want to use 2. The better solution is to instead add a `.editorconfig` to all
+-- of your personal projects. As well as a configuration for the respective language. And possibly
+-- have a repo with templates to pull from if you find yourself often reusing the same config over
+-- and over.
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
