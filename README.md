@@ -20,7 +20,7 @@ Directory layout:
 └── nvim-work/
     ├── init.lua
     └── lua/
-│       └── work/
+        └── work/
           ├── config/
           └── plugins/
 ```
