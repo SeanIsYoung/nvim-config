@@ -8,14 +8,62 @@
 -- to respect the .editorconfig file. So we have disabled that too and
 -- replaced it with roslyn.nvim. Currently using Roslyn basically requires
 -- that package. Hopefully someday we won't need it. But for now it works.
+--
+-- TODO: Update to easydotnet.
+-- What we have works. But easydotnet seems to add more features and integrations.
+-- Plus hopefully at some point roslyn.nvim will be replaced with nvim-lspconfig.
+-- Try switching to easydotnet.
+--
+-- https://github.com/GustavEikaas/easy-dotnet.nvim
+-- https://github.com/LazyVim/LazyVim/pull/6730 - pull request adding it as an extra to lazyvim.
+-- https://github.com/mogggen/LazyVim/pull/1/changes - someone else's custom implementation.
 --]]
+
+-- lua/plugins/resharper-format.lua
+local sdk_cache = {}
+
+local function dotnet_sdk(dir)
+  if sdk_cache[dir] == nil then
+    -- Run in the solution dir so global.json is respected
+    local res = vim.system({ "dotnet", "--version" }, { cwd = dir, text = true }):wait()
+    sdk_cache[dir] = res.code == 0 and vim.trim(res.stdout) or false
+  end
+  return sdk_cache[dir]
+end
 
 return {
   {
     "stevearc/conform.nvim",
     opts = {
-      formatters_by_ft = {
-        cs = {}, -- disable formatting for C#
+      default_format_opts = { timeout_ms = 120000 },
+      formatters_by_ft = { cs = { "resharper" } },
+      formatters = {
+        resharper = {
+          command = "jb",
+          stdin = false,
+          tmpfile_format = false,
+          args = function(self, ctx)
+            local sln = vim.fs.find(function(n)
+              return n:match("%.slnx?$")
+            end, { path = ctx.dirname, upward = true })[1]
+            local root = vim.fs.dirname(sln)
+            local file = vim.fs.normalize(ctx.filename)
+            local rel = file:sub(#vim.fs.normalize(root) + 2)
+
+            local args = { "cleanupcode" }
+            local sdk = dotnet_sdk(root)
+            if sdk then
+              table.insert(args, "--dotnetcoresdk=" .. sdk)
+            end
+            vim.list_extend(args, {
+              "--include=" .. rel,
+              "--profile=Built-in: Reformat Code",
+              "--no-build",
+              sln,
+            })
+            return args
+          end,
+        },
       },
     },
   },
